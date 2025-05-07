@@ -1,0 +1,4 @@
+"STARTUP.obj",
+".\PID.obj" 
+TO "PID" 
+RAMSIZE(256) 

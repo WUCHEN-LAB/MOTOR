@@ -1,0 +1,40 @@
+{
+    "configurations": [
+        {
+            "name": "Target 1",
+            "includePath": [
+                "d:\\Proteus\\51board\\project7 PID\\head",
+                "D:\\KeilC51\\C51\\INC",
+                "d:\\Proteus\\51board\\project7 PID\\files",
+                "d:\\Proteus\\51board\\project7 PID\\code"
+            ],
+            "defines": [
+                "__C51__",
+                "__VSCODE_C51__",
+                "reentrant=",
+                "compact=",
+                "small=",
+                "large=",
+                "data=",
+                "idata=",
+                "pdata=",
+                "bdata=",
+                "xdata=",
+                "code=",
+                "bit=char",
+                "sbit=char",
+                "sfr=char",
+                "sfr16=int",
+                "sfr32=int",
+                "interrupt=",
+                "using=",
+                "_at_=",
+                "_priority_=",
+                "_task_="
+            ],
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "D:/KeilC51/UV4/Uv4.exe"
+        }
+    ],
+    "version": 4
+}

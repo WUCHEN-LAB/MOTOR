@@ -1,0 +1,20 @@
+{
+    "background.enabled": true,
+    "editor.codeActionsOnSave": {
+      
+        
+    },
+    "KeilAssistant.C51.Uv4Path": "D:\\KeilC51\\UV4\\Uv4.exe",
+    "EIDE.C51.INI.Path": "d:\\KeilC51\\TOOLS.INI",
+    "KeilAssistant.MDK.Uv4Path": "D:\\KeilC51\\UV4\\Uv4.exe",
+    "KeilAssistant.Project.ExcludeList": [
+  
+      "template.uvproj",
+      "template.uvprojx"
+    ],
+    "C_Cpp.default.includePath": [
+          "D:\\KeilC51\\C51\\INC\\**"
+      ]
+  
+  }
+  
