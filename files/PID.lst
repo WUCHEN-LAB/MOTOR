@@ -1,4 +1,4 @@
-C51 COMPILER V9.00   PID                                                                   05/08/2025 23:36:41 PAGE 1   
+C51 COMPILER V9.00   PID                                                                   05/09/2025 20:17:42 PAGE 1   
 
 
 C51 COMPILER V9.00, COMPILATION OF MODULE PID
@@ -15,130 +15,151 @@ line level    source
    5          static unsigned int display_timer = 0;
    6          
    7          int PWM = 0;                 // 初始化 PWM 值
-   8          unsigned int num;
-   9          unsigned int rpm = 0;        // 转速（每分钟转数）
-  10          unsigned int pulse_count = 0; // 记录脉冲数
-  11          #define ENCODER_PULSES 25    // 定义编码器每转的脉冲数
-  12          
-  13          unsigned char code digit_table[] = {0x3F, 0x06, 0x5B, 0x4F, 0x66, 
-  14                                              0x6D, 0x7D, 0x07, 0x7F, 0x6F};
-  15          
-  16          void delay(uint j)
-  17          {
-  18   1          for (; j > 0; j--)
-  19   1          {
-  20   2              _nop_();
-  21   2          }
-  22   1      }
-  23          
-  24          void clear()
-  25          {
-  26   1          P1_0 = 1; P1_1 = 1; P1_2 = 1; P1_3 = 1;
-  27   1          delay(200);
-  28   1      }
-  29          
-  30          void display(unsigned int num)
-  31          {
-  32   1          clear();
-  33   1          P1_0 = 0; P1_1 = 1; P1_2 = 1; P1_3 = 1;
-  34   1          P0 = digit_table[num / 1000];  // 显示千位数字
-  35   1          delay(200);
-  36   1      
-  37   1          clear();
-  38   1          P1_0 = 1; P1_1 = 0; P1_2 = 1; P1_3 = 1;
-  39   1          P0 = digit_table[(num / 100) % 10];  // 显示百位数字
-  40   1          delay(200);
-  41   1      
-  42   1          clear();
-  43   1          P1_0 = 1; P1_1 = 1; P1_2 = 0; P1_3 = 1;
-  44   1          P0 = digit_table[(num / 10) % 10];  // 显示十位数字
-  45   1          delay(200);
-  46   1      
-  47   1          clear();
-  48   1          P1_0 = 1; P1_1 = 1; P1_2 = 1; P1_3 = 0;
-  49   1          P0 = digit_table[num % 10];  // 显示个位数字
-  50   1          delay(70);
-  51   1      }
-  52          
-  53          void Timer0_Init()
-  54          {
-C51 COMPILER V9.00   PID                                                                   05/08/2025 23:36:41 PAGE 2   
+   8          unsigned int time = 100; // 定义时间间隔 
+   9          unsigned int num;
+  10          unsigned int num2;
+  11          unsigned int rpm = 0;        // 转速（每分钟转数）
+  12          unsigned int pulse_count = 0; // 记录脉冲数
+  13          #define ENCODER_PULSES 25    // 定义编码器每转的脉冲数
+  14          
+  15          unsigned char code digit_table[] = {0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F};
+  16          
+  17          void delay(uint j)
+  18          {
+  19   1          for (; j > 0; j--)
+  20   1          {
+  21   2              _nop_();
+  22   2          }
+  23   1      }
+  24          
+  25          void clear()
+  26          {
+  27   1          P1_0 = 1; P1_1 = 1; P1_2 = 1; P1_3 = 1;
+  28   1          delay(time);
+  29   1      }
+  30          
+  31          void display_real(unsigned int num)
+  32          {
+  33   1          clear();
+  34   1          P1_0 = 1; P1_1 = 1; P1_2 = 1; P1_3 = 1;
+  35   1          P0 = digit_table[num / 1000];  // 显示千位数字
+  36   1          delay(time);
+  37   1      
+  38   1          clear();
+  39   1          P1_0 = 0; P1_1 = 1; P1_2 = 1; P1_3 = 1;
+  40   1          P0 = digit_table[(num / 100) % 10];  // 显示百位数字
+  41   1          delay(time);
+  42   1      
+  43   1          clear();
+  44   1          P1_0 = 1; P1_1 = 0; P1_2 = 1; P1_3 = 1;
+  45   1          P0 = digit_table[(num / 10) % 10];  // 显示十位数字
+  46   1          delay(time);
+  47   1      
+  48   1          clear();
+  49   1          P1_0 = 1; P1_1 = 1; P1_2 = 0; P1_3 = 1;
+  50   1          P0 = digit_table[num % 10];  // 显示个位数字
+  51   1          delay(time);
+  52   1      }
+  53          
+  54          void display_set(unsigned int num2)
+C51 COMPILER V9.00   PID                                                                   05/09/2025 20:17:42 PAGE 2   
 
-  55   1          TMOD |= 0x01;  // 定时器0模式1
-  56   1          TH0 = 0xFC;    // 初值（1ms定时）
-  57   1          TL0 = 0x18;
-  58   1          ET0 = 1;       // 使能定时器0中断
-  59   1          EA = 1;        // 总中断使能
-  60   1          TR0 = 1;       // 启动定时器0
-  61   1      }
-  62          
-  63          void ExternalInterrupt_Init()
-  64          {
-  65   1          IT0 = 1;  // 下降沿触发
-  66   1          EX0 = 1;  // 外部中断0使能
-  67   1          EA = 1;   // 总中断使能
-  68   1      }
-  69          
-  70          void Timer0_ISR() interrupt 1
-  71          {
-  72   1          static unsigned int ms_count = 0;
-  73   1          TH0 = 0xFC;    // 重装初值
-  74   1          TL0 = 0x18;
-  75   1          ms_count++;
-  76   1      
-  77   1          if (ms_count >= 1000)  // 每秒计算一次转速
-  78   1          {
-  79   2              rpm = (pulse_count * 60) / ENCODER_PULSES;
-  80   2              pulse_count = 0;  // 清零脉冲计数
-  81   2              ms_count = 0;
-  82   2          }
-  83   1      }
-  84          
-  85          void INT0_ISR() interrupt 0
-  86          {
-  87   1          pulse_count++;  // 每次外部中断增加脉冲计数
-  88   1      }
-  89          
-  90          void main(void)
-  91          {
-  92   1          Timer0_Init();            // 初始化定时器
-  93   1          ExternalInterrupt_Init(); // 初始化外部中断
-  94   1          DIR = 0;
-  95   1          while (1)
-  96   1          {
-  97   2              if (!INC){
-  98   3                  delay(200);  // 防抖动延时
-  99   3                  PWM = PWM > 10 ? PWM - 10 : 0;  // 减少 PWM
- 100   3              }
- 101   2              if (!DEC){
- 102   3                  delay(200);  // 防抖动延时
- 103   3                  PWM = PWM < 990 ? PWM + 20 : 1000;  // 增加 PWM
- 104   3              }
- 105   2              if(PWM <= 10){
- 106   3                  OUTPUT = 0;    // PWM 低电平
- 107   3              }else{
- 108   3                  OUTPUT = 1;    // PWM 高电平
- 109   3                  delay(PWM);
- 110   3                  OUTPUT = 0;    // PWM 低电平
- 111   3                  delay(1000 - PWM);
- 112   3              }
- 113   2              
- 114   2              if (++display_timer >= 2) { // 每100ms刷新一次显示
- 115   3                  display_timer = 0;
- 116   3                  display(rpm); // 显示转速
-C51 COMPILER V9.00   PID                                                                   05/08/2025 23:36:41 PAGE 3   
+  55          {
+  56   1          clear();
+  57   1          P1_4 = 1; P1_5 = 1; P1_6 = 1; P1_7 = 1;
+  58   1          P2 = digit_table[num2 / 1000];  // 显示千位数字
+  59   1          delay(time);
+  60   1      
+  61   1          clear();
+  62   1          P1_4 = 0; P1_5 = 1; P1_6 = 1; P1_7 = 1;
+  63   1          P2 = digit_table[(num2 / 100) % 10];  // 显示百位数字
+  64   1          delay(time);
+  65   1      
+  66   1          clear();
+  67   1          P1_4 = 1; P1_5 = 0; P1_6 = 1; P1_7 = 1;
+  68   1          P2 = digit_table[(num2 / 10) % 10];  // 显示十位数字
+  69   1          delay(time);
+  70   1      
+  71   1          clear();
+  72   1          P1_4 = 1; P1_5 = 1; P1_6 = 0; P1_7 = 1;
+  73   1          P2 = digit_table[num2 % 10];  // 显示个位数字
+  74   1          delay(time);
+  75   1      }
+  76          
+  77          void Timer0_Init()
+  78          {
+  79   1          TMOD |= 0x01;  // 定时器0模式1
+  80   1          TH0 = 0xFC;    // 初值（1ms定时）
+  81   1          TL0 = 0x18;
+  82   1          ET0 = 1;       // 使能定时器0中断
+  83   1          EA = 1;        // 总中断使能
+  84   1          TR0 = 1;       // 启动定时器0
+  85   1      }
+  86          
+  87          void ExternalInterrupt_Init()
+  88          {
+  89   1          IT0 = 1;  // 下降沿触发
+  90   1          EX0 = 1;  // 外部中断0使能
+  91   1          EA = 1;   // 总中断使能
+  92   1      }
+  93          
+  94          void Timer0_ISR() interrupt 1
+  95          {
+  96   1          static unsigned int ms_count = 0;
+  97   1          TH0 = 0xFC;    // 重装初值
+  98   1          TL0 = 0x18;
+  99   1          ms_count++;
+ 100   1      
+ 101   1          if (ms_count >= 1000)  // 每秒计算一次转速
+ 102   1          {
+ 103   2              rpm = (pulse_count * 60) / ENCODER_PULSES;
+ 104   2              pulse_count = 0;  // 清零脉冲计数
+ 105   2              ms_count = 0;
+ 106   2          }
+ 107   1      }
+ 108          
+ 109          void INT0_ISR() interrupt 0
+ 110          {
+ 111   1          pulse_count++;  // 每次外部中断增加脉冲计数
+ 112   1      }
+ 113          
+ 114          void main(void)
+ 115          {
+ 116   1          Timer0_Init();            // 初始化定时器
+C51 COMPILER V9.00   PID                                                                   05/09/2025 20:17:42 PAGE 3   
 
- 117   3              }
- 118   2          }
- 119   1      }
+ 117   1          ExternalInterrupt_Init(); // 初始化外部中断
+ 118   1          DIR = 0;
+ 119   1          while (1)
+ 120   1          {
+ 121   2              if (!INC){
+ 122   3                  delay(200);  // 防抖动延时
+ 123   3                  PWM = PWM > 10 ? PWM - 20 : 0;  // 减少 PWM
+ 124   3              }
+ 125   2              if (!DEC){
+ 126   3                  delay(200);  // 防抖动延时
+ 127   3                  PWM = PWM < 990 ? PWM + 20 : 1000;  // 增加 PWM
+ 128   3              }
+ 129   2              if(PWM <= 10){
+ 130   3                  OUTPUT = 0;    // PWM 低电平
+ 131   3              }else{
+ 132   3                  OUTPUT = 1;    // PWM 高电平
+ 133   3                  delay(PWM);
+ 134   3                  OUTPUT = 0;    // PWM 低电平
+ 135   3                  delay(1000 - PWM);
+ 136   3              }
+ 137   2                  display_set(rpm);
+ 138   2                  display_real(rpm);  // 显示转速
+ 139   2          }
+ 140   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    468    ----
+   CODE SIZE        =    621    ----
    CONSTANT SIZE    =     10    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
-   DATA SIZE        =     12    ----
+   DATA SIZE        =     16    ----
    IDATA SIZE       =   ----    ----
    BIT SIZE         =   ----    ----
 END OF MODULE INFORMATION.

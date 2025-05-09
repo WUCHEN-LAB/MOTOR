@@ -188,7 +188,7 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>9</TopLine>
+      <TopLine>1</TopLine>
       <CurrentLine>9</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\code\PID.c</PathWithFileName>
@@ -1556,7 +1556,7 @@
         <Doc>
           <Name>..\code\PID.c</Name>
           <ColumnNumber>0</ColumnNumber>
-          <TopLine>9</TopLine>
+          <TopLine>1</TopLine>
           <CurrentLine>9</CurrentLine>
         </Doc>
       </Documents>

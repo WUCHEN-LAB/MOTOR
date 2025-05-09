@@ -5,13 +5,14 @@
 static unsigned int display_timer = 0;
 
 int PWM = 0;                 // 初始化 PWM 值
+unsigned int time = 100; // 定义时间间隔 
 unsigned int num;
+unsigned int num2;
 unsigned int rpm = 0;        // 转速（每分钟转数）
 unsigned int pulse_count = 0; // 记录脉冲数
 #define ENCODER_PULSES 25    // 定义编码器每转的脉冲数
 
-unsigned char code digit_table[] = {0x3F, 0x06, 0x5B, 0x4F, 0x66, 
-                                    0x6D, 0x7D, 0x07, 0x7F, 0x6F};
+unsigned char code digit_table[] = {0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F};
 
 void delay(uint j)
 {
@@ -24,30 +25,53 @@ void delay(uint j)
 void clear()
 {
     P1_0 = 1; P1_1 = 1; P1_2 = 1; P1_3 = 1;
-    delay(200);
+    delay(time);
 }
 
-void display(unsigned int num)
+void display_real(unsigned int num)
 {
     clear();
-    P1_0 = 0; P1_1 = 1; P1_2 = 1; P1_3 = 1;
+    P1_0 = 1; P1_1 = 1; P1_2 = 1; P1_3 = 1;
     P0 = digit_table[num / 1000];  // 显示千位数字
-    delay(200);
+    delay(time);
+
+    clear();
+    P1_0 = 0; P1_1 = 1; P1_2 = 1; P1_3 = 1;
+    P0 = digit_table[(num / 100) % 10];  // 显示百位数字
+    delay(time);
 
     clear();
     P1_0 = 1; P1_1 = 0; P1_2 = 1; P1_3 = 1;
-    P0 = digit_table[(num / 100) % 10];  // 显示百位数字
-    delay(200);
+    P0 = digit_table[(num / 10) % 10];  // 显示十位数字
+    delay(time);
 
     clear();
     P1_0 = 1; P1_1 = 1; P1_2 = 0; P1_3 = 1;
-    P0 = digit_table[(num / 10) % 10];  // 显示十位数字
-    delay(200);
+    P0 = digit_table[num % 10];  // 显示个位数字
+    delay(time);
+}
+
+void display_set(unsigned int num2)
+{
+    clear();
+    P1_4 = 1; P1_5 = 1; P1_6 = 1; P1_7 = 1;
+    P2 = digit_table[num2 / 1000];  // 显示千位数字
+    delay(time);
 
     clear();
-    P1_0 = 1; P1_1 = 1; P1_2 = 1; P1_3 = 0;
-    P0 = digit_table[num % 10];  // 显示个位数字
-    delay(70);
+    P1_4 = 0; P1_5 = 1; P1_6 = 1; P1_7 = 1;
+    P2 = digit_table[(num2 / 100) % 10];  // 显示百位数字
+    delay(time);
+
+    clear();
+    P1_4 = 1; P1_5 = 0; P1_6 = 1; P1_7 = 1;
+    P2 = digit_table[(num2 / 10) % 10];  // 显示十位数字
+    delay(time);
+
+    clear();
+    P1_4 = 1; P1_5 = 1; P1_6 = 0; P1_7 = 1;
+    P2 = digit_table[num2 % 10];  // 显示个位数字
+    delay(time);
 }
 
 void Timer0_Init()
@@ -96,7 +120,7 @@ void main(void)
     {
         if (!INC){
             delay(200);  // 防抖动延时
-            PWM = PWM > 10 ? PWM - 10 : 0;  // 减少 PWM
+            PWM = PWM > 10 ? PWM - 20 : 0;  // 减少 PWM
         }
         if (!DEC){
             delay(200);  // 防抖动延时
@@ -110,10 +134,7 @@ void main(void)
             OUTPUT = 0;    // PWM 低电平
             delay(1000 - PWM);
         }
-        
-        if (++display_timer >= 2) { // 每100ms刷新一次显示
-            display_timer = 0;
-            display(rpm); // 显示转速
-        }
+            display_set(rpm);
+            display_real(rpm);  // 显示转速
     }
 }
